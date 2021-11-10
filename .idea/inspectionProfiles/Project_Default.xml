@@ -1,6 +1,7 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
+<<<<<<< HEAD
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
@@ -84,6 +85,13 @@
             <item index="76" class="java.lang.String" itemvalue="argh" />
           </list>
         </value>
+=======
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="main.Car.__add__" />
+        </list>
+>>>>>>> origin/main
       </option>
     </inspection_tool>
   </profile>

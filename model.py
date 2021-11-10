@@ -8,7 +8,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
+<<<<<<< HEAD
 engine = create_engine('mysql+pymysql://root:PavloVasylevych@localhost:3306/mydb')
+=======
+engine = create_engine('mysql+pymysql://root:OlehSyniuk@localhost:3306/pp')
+>>>>>>> origin/main
 
 SessionFactory = sessionmaker(bind=engine)
 
@@ -22,6 +26,7 @@ class User(Base):
     id=Column(Integer, primary_key=True)
     name=Column(String(45))
     surname=Column(String(45))
+<<<<<<< HEAD
     username=Column(String(45))
     password=Column(String(45))
 
@@ -42,3 +47,21 @@ class Reservation(Base):
     date = Column(Date)
     audience = relationship("Audience")
     user = relationship("User")
+=======
+    login=Column(String(45))
+    password=Column(String(45))
+
+class Purchase(Base):
+    __tablename__ = 'Purchase'
+    id = Column(Integer, primary_key=True)
+    total_cost=Column(Integer)
+    user_id=Column(Integer)
+    medicine_id=Column(Integer)
+
+class Medicine(Base):
+    __tablename__ = 'Medicine'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(45))
+    expiration_date = Column(Date)
+    cost = Column(Integer)
+>>>>>>> origin/main
