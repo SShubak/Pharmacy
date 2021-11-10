@@ -38,3 +38,4 @@ class Medicine(Base):
     name = Column(String(45))
     expiration_date = Column(Date)
     cost = Column(Integer)
+    amount_avaliable = Column(Integer)
