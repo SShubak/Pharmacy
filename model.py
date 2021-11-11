@@ -26,14 +26,17 @@ class User(Base):
     password=Column(String(45))
 
 class Purchase(Base):
-    __tablename__ = 'Purchase'
+    __tablename__ = 'purchase'
     id = Column(Integer, primary_key=True)
     total_cost=Column(Integer)
-    user_id=Column(Integer)
-    medicine_id=Column(Integer)
+    user_id=Column(Integer, ForeignKey('user.id'))
+    medicine_id=Column(Integer, ForeignKey('medicine.id'))
+
+    user = relationship("User")
+    medicine = relationship("Medicine")
 
 class Medicine(Base):
-    __tablename__ = 'Medicine'
+    __tablename__ = 'medicine'
     id = Column(Integer, primary_key=True)
     name = Column(String(45))
     expiration_date = Column(Date)
