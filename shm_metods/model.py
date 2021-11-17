@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-engine = create_engine('mysql+pymysql://root:OlehSyniuk@localhost:3306/pp')
+engine = create_engine('mysql+pymysql://root:qwerty@localhost:3306/pp_lab_15')
 
 SessionFactory = sessionmaker(bind=engine)
 

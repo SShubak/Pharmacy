@@ -1,7 +1,8 @@
 from sqlalchemy.orm import sessionmaker
 
-from model import User, Purchase, Medicine, engine
-from model import Session
+from shm_metods.model import User, Purchase, Medicine, engine
+from shm_metods.model import Session
+
 session = sessionmaker(bind = engine)
 s = Session()
 
