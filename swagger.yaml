@@ -1,577 +1,377 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
-  version: '1.0.0'
-  title: Pharmacy
-tags:
-  - name: medicine
-    description: Everything about pharmaceutical medicine
-  - name: pharmacy
-    description: Everything about the pharmacy
-  - name: user
-    description: User operations
+  title: ""
+  description: ""
+  version: "1"
 servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/3_heroes/Pharmacy/1.0.0
-  - url: 'https://petstore.swagger.io/v2'
+- url: https://virtserver.swaggerhub.com/3_heroes/Laba_5/1
+tags:
+- name: auto
+  description: auto
+- name: clients
+  description: all us clients
+- name: balance
+  description: balance
 paths:
-  /medicine:
-    post:
-      tags:
-        - medicine
-      summary: add a medicine to the base
-      description: pharmacist only
-      operationId: addNewMedicine
-      security:
-        - provizor_api_key: []
-      responses:
-        '200':
-          description: medicine added
-        '400':
-         description: invalid input
-      requestBody:
-        $ref: '#/components/requestBodies/Medicine'
-  /medicine/'{id_medicine}':
-    put:
-      tags:
-        - medicine
-      summary: update medicine by id
-      security:
-        - user_auth:
-          - 'write:order'
-          - 'read:order'
-      parameters:
-        - name: id_medicine
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: demand
-          in: query
-          required: true
-          schema:
-            type: boolean
-            enum:
-              - true
-              - false
-      responses:
-        '200':
-          description: info acquired
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Medicine'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Medicine'
-        '400':
-          description: Invalid data
-        '404':
-          description: medicine not found
+  /auto:
     get:
       tags:
-        - medicine
-      summary: review medicine by id
-      parameters:
-        - name: id_medicine
-          in: path
-          required: true
-          schema:
-            type: string
+      - auto
+      operationId: login
       responses:
-        '200':
-          description: info acquired
+        200:
+          description: Log In
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Token'
+      security:
+      - Basic: []
+    post:
+      tags:
+      - auto
+      operationId: signup
+      requestBody:
+        description: New User
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      responses:
+        200:
+          description: Client created
+          content: {}
+      x-codegen-request-body-name: user
+    x-swagger-router-controller: auth-controller
+  /clients:
+    get:
+      tags:
+      - clients
+      description: returns all registered clients
+      operationId: getClients
+      parameters:
+      - name: limit
+        in: query
+        description: max number of records to return
+        schema:
+          type: integer
+          format: int32
+      responses:
+        200:
+          description: All clients
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+    post:
+      tags:
+      - clients
+      summary: Create client
+      description: This can only be done by the logged in user.
+      operationId: createClient
+      requestBody:
+        description: Created client object
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      responses:
+        default:
+          description: successful operation
+          content: {}
+      x-codegen-request-body-name: body
+  /clients/{id}:
+    get:
+      tags:
+      - clients
+      summary: Get client by user id
+      operationId: getUserById
+      parameters:
+      - name: id
+        in: path
+        description: The name that needs to be fetched. Use user1 for testing.
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Medicine'
+                $ref: '#/components/schemas/Client'
             application/xml:
               schema:
-                $ref: '#/components/schemas/Medicine'
-        '400':
-          description: Invalid data
-        '404':
-          description: medicine not found
+                $ref: '#/components/schemas/Client'
+        400:
+          description: Invalid id supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+      security:
+      - JWT: []
+    put:
+      tags:
+      - clients
+      summary: Updated client
+      description: This can only be done by the logged in client.
+      operationId: updateClient
+      parameters:
+      - name: id
+        in: path
+        description: name that need to be updated
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Updated user object
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      responses:
+        400:
+          description: Invalid user supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+      security:
+      - JWT: []
+      x-codegen-request-body-name: body
     delete:
       tags:
-        - medicine
-      summary: delete medicine from database by index
-      description: pharmacist only
-      operationId: deleteIdMedicine
-      security:
-        - provizor_api_key: []
+      - clients
+      summary: Delete client
+      description: This can only be done by the logged in client.
+      operationId: deleteClient
       parameters:
-        - name: id_medicine
-          in: path
-          description: medicine Id to delete
-          required: true
-          schema:
-            type: integer
-            format: int64
+      - name: id
+        in: path
+        description: The id that needs to be deleted
+        required: true
+        schema:
+          type: string
       responses:
-        '200':
-          description: medicine deleted
-        '400':
-          description: invalid input
-        '404':
-          description: No medicine in database
-  /pharmacy/orders:
+        400:
+          description: Invalid id supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+      security:
+      - JWT: []
+  /credits:
     get:
       tags:
-        - pharmacy
-      summary: Info about all orders
-      operationId: getAllOrders
-      responses:
-        '200':
-          description: info acquired
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
-        '404':
-          description: No order found
-  '/pharmacy/{id_order}':
-    put:
-      tags:
-        - pharmacy
-      summary: update order to demand by id
-
-      security:
-        - user_auth:
-          - 'write:order'
-          - 'read:order'
+      - credits
+      description: returns all registered credit
+      operationId: getAllCredits
       parameters:
-        - name: id_order
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: demand
-          in: query
-          required: true
-          schema:
-            type: boolean
-            enum:
-              - true
-              - false
+      - name: limit
+        in: query
+        description: max number of credit to return
+        schema:
+          type: integer
+          format: int32
       responses:
-        '200':
-          description: info acquired
+        200:
+          description: All credit
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid data
-        '404':
-          description: order not found
-  /user:
+                type: array
+                items:
+                  type: string
     post:
       tags:
-        - user
-      summary: Create new User
-      description: user only
-      operationId: createUser
-      security:
-        - provizor_api_key: []
-      responses:
-        '200':
-          description: new user added
-        '400':
-         description: Invalid input
+      - credits
+      operationId: register
       requestBody:
-        $ref: '#/components/requestBodies/User'
-  /user/login:
+        description: Created credit object
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Credit'
+        required: true
+      responses:
+        default:
+          description: successful operation
+          content: {}
+      security:
+      - JWT: []
+      x-codegen-request-body-name: body
+  /credits/{id_credit}:
     get:
       tags:
-        - user
-      summary: Signing in
-      operationId: loginUser
+      - credits
+      summary: Get credit by user id
+      operationId: getCreditById
       parameters:
-        - name: username
-          in: query
-          description: Login
-          required: true
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: Password
-          required: true
-          schema:
-            type: string
+      - name: id_credit
+        in: path
+        description: The credit that needs to be fetched
+        required: true
+        schema:
+          type: string
       responses:
-        '200':
-          description: signed in successfully
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credit'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Credit'
+        400:
+          description: Invalid id supplied
+          content: {}
+        404:
+          description: Credit not found
+          content: {}
+      security:
+      - JWT: []
+    delete:
+      tags:
+      - credits
+      summary: Delete client
+      description: This can only be done by the logged in client.
+      operationId: deleteCredit
+      parameters:
+      - name: id_credit
+        in: path
+        description: The id that needs to be deleted
+        required: true
+        schema:
+          type: string
+      responses:
+        400:
+          description: Invalid id supplied
+          content: {}
+        404:
+          description: Credit not found
+          content: {}
+      security:
+      - JWT: []
+  /balance:
+    get:
+      tags:
+      - balance
+      description: return balance
+      operationId: getBalance
+      parameters:
+      - name: balance
+        in: query
+        description: all balance
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: All balance
+          content:
+            '*/*':
               schema:
                 type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/json:
-              schema:
-                type: string
-            application/xml:
-              schema:
-                type: string
-        '400':
-          description: Invalid login and/or password
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: User sign out
-      operationId: logoutUser
-      responses:
-        '200':
-          description: successful sign out
-  '/user/{username}':
-    get:
-      tags:
-        - user
-      summary: Acquire user info by id
-      operationId: getUserByName
-      security:
-        - provizor_api_key: []
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Info acquired
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid user name
-        '404':
-          description: User not found
+                format: int64
     put:
       tags:
-        - user
-      summary: Update user info
-      description: user only
-      operationId: updateUser
-      security:
-        - user_auth:
-          - 'write:order'
-          - 'read:order'
+      - balance
+      summary: Updated balacne
+      description: Updated balacne
+      operationId: updateBalance
       parameters:
-        - name: username
-          in: path
-          description: User name
-          required: true
-          schema:
-            type: string
-      responses:
-        '400':
-          description: invalid name
-        '404':
-          description: User not found
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          format: int64
       requestBody:
+        description: Updated user object
         content:
-          application/json:
+          '*/*':
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/Balance'
         required: true
-    delete:
-      tags:
-        - user
-      summary: Delete user
-      description: user only
-      operationId: deleteUser
-      security:
-        - user_auth:
-          - 'write:order'
-          - 'read:order'
-      parameters:
-        - name: username
-          in: path
-          description: User's name, to delete
-          required: true
-          schema:
-            type: string
       responses:
-        '400':
-          description: Invalid Name
-        '404':
+        400:
+          description: Invalid user supplied
+          content: {}
+        404:
           description: User not found
-  /pharmacy/order:
-    post:
-      tags:
-        - pharmacy
-      summary: Place order
-      operationId: placeOrder
-      security:
-        - user_auth:
-          - 'write:order'
-          - 'read:order'
-      responses:
-        '200':
-          description: successful order
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid data
-      requestBody:
-        $ref: '#/components/requestBodies/Order'
-  '/pharmacy/ordersByUser/{username}':
-    get:
-      tags:
-        - pharmacy
-      summary: User can review the orders
-      description: user only
-      operationId: getOrdersByUser
-      security:
-        - user_auth:
-          - 'write:order'
-          - 'read:order'
-      parameters:
-        - name: username
-          in: path
-          required: true
-          description: Username
-          schema:
-            type: string
-        - name: status
-          in: query
-          required: false
-          description: Order status (not required)
-          schema:
-            type: string
-            enum:
-              - placed
-              - approved
-              - delivered
-        - name: medicines
-          in: query
-          required: false
-          description: Medicine (not required)
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/Medicine'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid data
-        '404':
-          description: Order not found
-  '/store/order/{orderId}':
-    get:
-      tags:
-        - pharmacy
-      summary: Reviewing an order
-      description: pharmacist only
-      operationId: getOrderById
-      security:
-        - provizor_api_key: []
-      parameters:
-        - name: orderId
-          in: path
-          description: Id шуканого замовлення
-          required: true
-          schema:
-            type: integer
-            format: int64
-            minimum: 1
-            maximum: 10
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Недопустимі значення
-        '404':
-          description: Замовлення не знайдено
-    delete:
-      tags:
-        - pharmacy
-      summary: Видалення замовлення провізором
-      description: pharmacist only
-      operationId: deleteOrderById
-      security:
-        - provizor_api_key: []
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          schema:
-            type: integer
-            format: int64
-            minimum: 1
-      responses:
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
+          content: {}
+      x-codegen-request-body-name: body
 components:
   schemas:
-    Medicine:
-      type: object
-      properties:
-        id_medicine:
-          type: integer
-          format: int64
-        name_medicine:
-          type: string
-        id_category:
-          type: integer
-          format: int64
-        manufacturer:
-          type: string
-        price:
-          type: integer
-          format: int64
-        in_stock:
-          type: boolean
-        demand:
-          type: boolean
-        in_stock_number:
-          type: integer
-          format: int64
-        demand_number:
-          type: integer
-          format: int64
-      xml:
-        name: Medicine
-    User:
-      type: object
-      properties:
-        id_user:
-          type: integer
-          format: int64
-        username:
-          type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
-        password:
-          type: string
-        phone:
-          type: string
-      xml:
-        name: User
-    Order:
+    Credit:
       type: object
       properties:
         id:
           type: integer
           format: int64
-        id_medicines:
-          type: array
-          items:
-            $ref: '#/components/schemas/Medicine'
-        id_user:
+        id_borrower:
           type: integer
           format: int64
-        shipDate:
-          type: string
-          format: date-time
-        status:
-          type: string
-          description: Order Status
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
+        loan_status:
           type: boolean
-          default: false
-      xml:
-        name: Order
-  requestBodies:
-    Medicine:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Medicine'
-        application/xml:
-          schema:
-            $ref: '#/components/schemas/Medicine'
-      description: Medicine to be added
-      required: true
-    User:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/User'
-        application/xml:
-          schema:
-            $ref: '#/components/schemas/User'
-      description: User to be added
-      required: true
-    Order:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Order'
-        application/xml:
-          schema:
-            $ref: '#/components/schemas/Order'
-      description: Order to be added
-      required: true
+        loan_date:
+          type: string
+          format: data
+        loan_amount:
+          type: integer
+          format: int64
+    Client:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        clientName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        clientStatus:
+          type: integer
+          description: Client Status
+          format: int32
+    Token:
+      required:
+      - token
+      - user
+      type: object
+      properties:
+        user:
+          type: string
+        token:
+          type: string
+    Balance:
+      type: object
+      properties:
+        balance:
+          type: integer
+          format: int64
   securitySchemes:
-    provizor_api_key:
+    Basic:
+      type: http
+      scheme: basic
+    JWT:
       type: apiKey
-      name: provizor_api_key
+      name: Authorization
       in: header
-    user_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'http://petstore.swagger.io/oauth/dialog'
-          scopes:
-            'write:order': Order
-            'read:order': review order
