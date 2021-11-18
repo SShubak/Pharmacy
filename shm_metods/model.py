@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Integer, String, Column, Date, ForeignKey,
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy import Integer, String, Column, Date, ForeignKey
+from sqlalchemy import Integer, String, Column, DateTime, ForeignKey
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
@@ -17,24 +17,39 @@ Session = scoped_session(SessionFactory)
 Base = declarative_base()
 metadata = Base.metadata
 
+
 class User(Base):
     __tablename__ = 'user'
-    id=Column(Integer, primary_key=True)
-    name=Column(String(45))
-    surname=Column(String(45))
-    login=Column(String(45))
-    password=Column(String(45))
+    id_user = Column(Integer, primary_key=True)
+    firstName = Column(String(45))
+    lastName = Column(String(45))
+    email = Column(String(45))
+    phone = Column(String(12))
+    login = Column(String(45))
+    password = Column(String(200))
 
-class Purchase(Base):
-    __tablename__ = 'Purchase'
-    id = Column(Integer, primary_key=True)
-    total_cost=Column(Integer)
-    user_id=Column(Integer)
-    medicine_id=Column(Integer)
+
+class Order(Base):
+    __tablename__ = 'order'
+    id_order = Column(Integer, primary_key=True)
+    id_medicine = Column(Integer, ForeignKey('medicine.id_medicine'))
+    id_user = Column(Integer, ForeignKey('user.id_user'))
+    shipDate = Column(DateTime)
+    status = Column(String(45))
+    amount = Column(Integer)
+    complete = Column(Boolean, default=False)
+
+    medicine = relationship("Medicine")
+    user = relationship("User")
+
 
 class Medicine(Base):
-    __tablename__ = 'Medicine'
-    id = Column(Integer, primary_key=True)
+    __tablename__ = 'medicine'
+    id_medicine = Column(Integer, primary_key=True)
     name = Column(String(45))
-    expiration_date = Column(Date)
-    cost = Column(Integer)
+    manufacturer = Column(String(45))
+    price = Column(Integer)
+    in_stock = Column(Boolean)
+    demand = Column(Boolean)
+    in_stock_number = Column(Integer)
+    demand_number = Column(Integer)
