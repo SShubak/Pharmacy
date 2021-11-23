@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, request, jsonify
 from marshmallow import ValidationError
 from flask_bcrypt import Bcrypt
-from shm_metods.model import User, Session
+from shm_metods.model import User, Order, Session
 from shm_metods.shm import UserSchema
 
 user = Blueprint('user', __name__)
@@ -101,8 +101,11 @@ def delete_user(id_user):
     db_user = session.query(User).filter_by(id_user=id_user).first()
     if not db_user:
         return Response(status=404, response='A user with provided ID was not found.')
-
-    # Delete user
-    session.delete(db_user)
-    session.commit()
-    return Response(response='User was deleted.')
+    db_order = session.query(Order).filter_by(id_user=id_user).first()
+    if not db_order:
+        # Delete user
+        session.delete(db_user)
+        session.commit()
+        return Response(response='User was deleted.')
+    else:
+        return Response(status=400, response='User already has orders.')
