@@ -1,9 +1,9 @@
 from flask import Blueprint, Response, request, jsonify
 from marshmallow import ValidationError
 from flask_bcrypt import Bcrypt
-from shm_metods.model import Order, User, Medicine, Session
-from shm_metods.shm import OrderSchema
-
+from model import Order, User, Medicine, Session
+from shm import OrderSchema
+from User import  auth
 order = Blueprint('order', __name__)
 bcrypt = Bcrypt()
 
@@ -12,6 +12,7 @@ session = Session()
 
 # Register new order
 @order.route('/api/v1/pharmacy/orders', methods=['POST'])
+@auth.verify_password
 def register():
     # Get data from request body
     data = request.get_json()
@@ -29,6 +30,8 @@ def register():
     db_user = session.query(User).filter_by(id_user=data['id_user']).first()
     if not db_user:
         return Response(status=404, response='A user with provided ID was not found.')
+    if db_user.login != auth.username():
+        return Response(status=404, response='You can get order on yourself')
 
     # Create new order
     new_order = Order(id_medicine=data['id_medicine'], id_user=data['id_user'], shipDate=data['shipDate'], amount=data['amount'], status="placed", complete=False)
@@ -42,7 +45,7 @@ def register():
 
 # Get all orders
 @order.route('/api/v1/pharmacy/orders', methods=['GET'])
-def get_reservations():
+def get_orders():
     # Get all orders from db
     orders = session.query(Order)
 
@@ -62,12 +65,16 @@ def get_reservations():
 
 
 # Get order by id
-@order.route('/api/v1/pharmacy/orders/<id_order>', methods=['GET'])
-def get_reservation(id_order):
+@order.route('/api/v1/pharmacy/orderscheck/<id_order>', methods=['GET'])
+@auth.verify_password
+def get_order(id_order):
     # Check if order exists
     db_orders = session.query(Order).filter_by(id_order=id_order).first()
     if not db_orders:
         return Response(status=404, response='A order with provided ID was not found.')
+    db_user = session.query(User).filter_by(id_user=db_orders.id_user).first()
+    if db_user.login != auth.username():
+        return Response(status=404, response='You can get only your information')
 
     # Return order data
     order_data = {
@@ -79,15 +86,18 @@ def get_reservation(id_order):
         'status': db_orders.status,
         'complete': db_orders.complete
     }
-    return jsonify({"reservation": order_data})
+    return jsonify({"order": order_data})
 
 # Get all orders for user with provided login
-@order.route('/api/v1/pharmacy/user/orders/<login>', methods=['GET'])
-def get_reservations_by_username(login):
+@order.route('/api/v1/pharmacy/user/ordersall/<login>', methods=['GET'])
+@auth.verify_password
+def get_orders_by_username(login):
     # Check if user exists
     user = session.query(User).filter_by(login=login).first()
     if not user:
         return Response(status=404, response='User with such login was not found.')
+    if login != auth.username():
+        return Response(status=404, response='You can get only your information')
 
     # Get all user's orders from db
     orders = session.query(Order).filter_by(id_user=user.id_user)
@@ -105,7 +115,8 @@ def get_reservations_by_username(login):
 
 
 # Update order by id
-@order.route('/api/v1/harmacy/orders/<id_order>', methods=['PUT'])
+@order.route('/api/v1/pharmacy/ordersupdate/<id_order>', methods=['PUT'])
+@auth.verify_password
 def update_user(id_order):
     # Get data from request body
     data = request.get_json()
@@ -120,6 +131,9 @@ def update_user(id_order):
     db_order = session.query(Order).filter_by(id_order=id_order).first()
     if not db_order:
         return Response(status=404, response='Order with provided ID was not found.')
+    db_user = session.query(User).filter_by(id_user=db_order.id_user).first()
+    if db_user.login != auth.username():
+        return Response(status=404, response='You can update only your information')
 
     # Change medicine data
     if 'id_medicine' in data.keys():
@@ -145,11 +159,15 @@ def update_user(id_order):
 
 # Delete order by id
 @order.route('/api/v1/pharmacy/orders/<id_order>', methods=['DELETE'])
-def delete_reservation(id_order):
+@auth.verify_password
+def delete_order(id_order):
     # Check if order exists
     db_orders = session.query(Order).filter_by(id_order=id_order).first()
     if not db_orders:
         return Response(status=404, response='A order with provided ID was not found.')
+    db_user = session.query(User).filter_by(id_user=db_orders.id_user).first()
+    if db_user.login != auth.username():
+        return Response(status=404, response='You can delete your information')
 
     # Delete order
     session.delete(db_orders)

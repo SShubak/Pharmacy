@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-engine = create_engine('mysql+pymysql://root:qwerty@localhost:3306/pp_lab_15')
+engine = create_engine('mysql+pymysql://root:PavloVasylevych@localhost:3306/pharmacy')
 
 SessionFactory = sessionmaker(bind=engine)
 
@@ -27,6 +27,7 @@ class User(Base):
     phone = Column(String(12))
     login = Column(String(45))
     password = Column(String(200))
+    is_provisor = Column(Boolean, default=False)
 
 
 class Order(Base):

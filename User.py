@@ -1,13 +1,24 @@
 from flask import Blueprint, Response, request, jsonify
 from marshmallow import ValidationError
 from flask_bcrypt import Bcrypt
-from shm_metods.model import User, Order, Session
-from shm_metods.shm import UserSchema
-
+from model import User, Order, Session
+from shm import UserSchema
+from flask_httpauth import HTTPBasicAuth
 user = Blueprint('user', __name__)
 bcrypt = Bcrypt()
 
 session = Session()
+auth = HTTPBasicAuth()
+
+# Password Verification
+@auth.verify_password
+def verify_password(login, password):
+    try:
+        user = session.query(User).filter_by(login=login).first()
+        if user and bcrypt.check_password_hash(user.password, password):
+            return login
+    except:
+        return None
 
 # Register new user
 @user.route('/api/v1/User', methods=['POST'])
@@ -29,7 +40,7 @@ def register():
     # Hash user's password
     hashed_password = bcrypt.generate_password_hash(data['password'])
     # Create new user
-    new_user = User(firstName=data['firstName'], lastName=data['lastName'], email=data['email'], phone=data['phone'], login=data['login'], password=hashed_password)
+    new_user = User(firstName=data['firstName'], lastName=data['lastName'], email=data['email'], phone=data['phone'], login=data['login'], password=hashed_password, is_provisor=data['is_provisor'])
 
     # Add new user to db
     session.add(new_user)
@@ -39,19 +50,23 @@ def register():
 
 
 # Get user by id
-@user.route('/api/v1/user/<id_user>', methods=['GET'])
+@user.route('/api/v1/getuser/<id_user>', methods=['GET'])
+#@auth.login_required
 def get_user(id_user):
     # Check if user exists
     db_user = session.query(User).filter_by(id_user=id_user).first()
     if not db_user:
         return Response(status=404, response='A user with provided ID was not found.')
+    if db_user.login != auth.username():
+        return Response(status=404, response='You can get only your information')
 
     # Return user data
     user_data = {'id': db_user.id_user, 'name': db_user.firstName, 'surname': db_user.lastName}
     return jsonify({"user": user_data})
 
 # Update user by id
-@user.route('/api/v1/user/<id_user>', methods=['PUT'])
+@user.route('/api/v1/updateuser/<id_user>', methods=['PUT'])
+#@auth.login_required
 def update_user(id_user):
     # Get data from request body
     data = request.get_json()
@@ -66,6 +81,8 @@ def update_user(id_user):
     db_user = session.query(User).filter_by(id_user=id_user).first()
     if not db_user:
         return Response(status=404, response='A user with provided ID was not found.')
+    if db_user.login != auth.username():
+        return Response(status=404, response='You can update only your information')
 
     # Check if login is not taken if user tries to change it
     if 'login' in data.keys():
@@ -85,7 +102,8 @@ def update_user(id_user):
         db_user.email = data['email']
     if "phone" in data.keys():
         db_user.phone = data['phone']
-
+    if "is_provisor" in data.keys():
+        db_user.is_provisor = data['is_provisor']
     # Save changes
     session.commit()
 
@@ -95,12 +113,15 @@ def update_user(id_user):
 
 
 # Delete user by id
-@user.route('/api/v1/user/<id_user>', methods=['DELETE'])
+@user.route('/api/v1/deleteuser/<id_user>', methods=['DELETE'])
+#@auth.login_required
 def delete_user(id_user):
     # Check if user exists
     db_user = session.query(User).filter_by(id_user=id_user).first()
     if not db_user:
         return Response(status=404, response='A user with provided ID was not found.')
+    if db_user.login != auth.username():
+        return Response(status=404, response='You can delete only your account')
     db_order = session.query(Order).filter_by(id_user=id_user).first()
     if not db_order:
         # Delete user

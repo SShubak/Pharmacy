@@ -1,8 +1,8 @@
 from flask import Flask
 from waitress import serve
-from shm_metods.User import user
-from shm_metods.Medicine import medicine
-from shm_metods.Pharmacy import order
+from User import user
+from Medicine import medicine
+from Pharmacy import order
 
 app = Flask(__name__)
 

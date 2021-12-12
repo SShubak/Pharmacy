@@ -22,6 +22,7 @@ class UserSchema(Schema):
     email = fields.String(validate=Length(min=3, max=100))
     password = fields.String(validate=Length(min=8, max=200))
     phone = fields.String(validate=Length(min=10, max=12))
+    is_provisor = fields.Boolean(strict=True)
 
 
 class OrderSchema(Schema):
