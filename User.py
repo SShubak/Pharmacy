@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from model import User, Order, Session
 from shm import UserSchema
 from flask_httpauth import HTTPBasicAuth
+
 user = Blueprint('user', __name__)
 bcrypt = Bcrypt()
 
@@ -35,7 +36,7 @@ def register():
     # Check if user already exists
     exists = session.query(User).filter_by(login=data['login']).first()
     if exists:
-        return Response(status=400, response='User with such login already exists.')
+        return Response(status=404, response='User with such login already exists.')
 
     # Hash user's password
     hashed_password = bcrypt.generate_password_hash(data['password'])
