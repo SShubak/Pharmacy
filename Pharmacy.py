@@ -33,6 +33,8 @@ def register():
     if db_user.login != auth.username():
         return Response(status=404, response='You can get order on yourself')
 
+    db_medicine.in_stock_number = db_medicine.in_stock_number - data['amount']
+
     # Create new order
     new_order = Order(id_medicine=data['id_medicine'], id_user=data['id_user'], shipDate=data['shipDate'],
                       amount=data['amount'])
