@@ -1,9 +1,12 @@
 from flask import Blueprint, Response, request, jsonify
 from marshmallow import ValidationError
 from flask_bcrypt import Bcrypt
+from pymysql import Date
+
 from model import Medicine, Session, Order, User, Medicine, Session
 from shm import MedicineSchema
-from User import  auth
+from User import auth
+
 medicine = Blueprint('medicine', __name__)
 bcrypt = Bcrypt()
 
@@ -31,7 +34,8 @@ def register():
     if db_user.is_provisor != 1:
         return Response(status=404, response='Provisor Only')
     # Create new medicine
-    new_medicine = Medicine(name=data['name'], manufacturer=data['manufacturer'], price=data['price'], in_stock=True, demand=False, in_stock_number=data['in_stock_number'], demand_number=0)
+    new_medicine = Medicine(name=data['name'], manufacturer=data['manufacturer'], price=data['price'], in_stock=True,
+                            demand=False, in_stock_number=data['in_stock_number'], demand_number=0)
 
     # Add new medicine to db
     session.add(new_medicine)
@@ -50,8 +54,6 @@ def get_reservations():
     if not medicines:
         return Response(status=404, response='No one medicine')
     db_user = session.query(User).filter_by(login=auth.username()).first()
-    if db_user.is_provisor != 1:
-        return Response(status=404, response='Provisor Only')
 
     # Return all medicines
     output = []
@@ -61,9 +63,7 @@ def get_reservations():
                        'price': r.price,
                        'manufacturer': r.manufacturer,
                        'in_stock_number': r.in_stock_number})
-    return jsonify({"orders": output})
-
-
+    return jsonify(output)
 
 
 # Get medicine by id
@@ -71,16 +71,15 @@ def get_reservations():
 @auth.verify_password
 def get_user(id_medicine):
     # Check if medicine exists
-    db_medicine = session.query(Medicine).filter_by(id_medicine=id_medicine).first()
+    session2 = Session()
+    db_medicine = session2.query(Medicine).filter_by(id_medicine=id_medicine).first()
+    print("hereeeeeeeeee")
     if not db_medicine:
         return Response(status=404, response='Medicine with provided ID was not found.')
-    db_user = session.query(User).filter_by(login=auth.username()).first()
-    if db_user.is_provisor != 1:
-        return Response(status=404, response='Provisor Only')
 
     # Return medicine data
-    medicine_data = {'id': db_medicine.id_medicine, 'name': db_medicine.name, 'price': db_medicine.price}
-    return jsonify({"medicine": medicine_data})
+    medicine_data = {'name': db_medicine.name, 'price': db_medicine.price}
+    return jsonify(medicine_data), 200
 
 
 # Update medicine by id

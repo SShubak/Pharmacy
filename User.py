@@ -50,7 +50,7 @@ def register():
     session.add(new_user)
     session.commit()
 
-    return Response(response='New user was successfully created!')
+    return jsonify("all was successfully"),200
 
 
 # Get user by id
@@ -70,18 +70,12 @@ def logout():
 
 
 # Update user by id
-@user.route('/api/v1/updateuser/', methods=['PUT'])
+@user.route('/api/v1/updateuser', methods=['PUT'])
 @auth.verify_password
 def update_user():
     # Get data from request body
     data = request.get_json()
     auth_data = auth.get_auth()
-
-    # Validate input data
-    try:
-        UserSchema().load(data)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
 
     # Check if user exists
     db_user = session.query(User).filter_by(login=auth_data['username']).first()
@@ -90,12 +84,6 @@ def update_user():
     if db_user.login != auth_data['username']:
         return Response(status=404, response='You can update only your information')
 
-    # Check if login is not taken if user tries to change it
-    if 'login' in data.keys():
-        exists = session.query(User).filter_by(login=data['login']).first()
-        if exists:
-            return Response(status=400, response='User with such login already exists.')
-        db_user.login = data['login']
     # Change user data
     if 'firstName' in data.keys():
         db_user.firstName = data['firstName']

@@ -1,6 +1,10 @@
+from datetime import datetime
+
 from flask import Blueprint, Response, request, jsonify
 from marshmallow import ValidationError
 from flask_bcrypt import Bcrypt
+from marshmallow.fields import Date
+
 from model import Order, User, Medicine, Session
 from shm import OrderSchema
 from User import auth
@@ -17,12 +21,7 @@ session = Session()
 def register():
     # Get data from request body
     data = request.get_json()
-
-    # Validate input data
-    try:
-        OrderSchema().load(data)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
+    data['shipDate'] = data['shipDate'][:10]
 
     db_medicine = session.query(Medicine).filter_by(id_medicine=data['id_medicine']).first()
     if not db_medicine:
@@ -36,13 +35,13 @@ def register():
 
     # Create new order
     new_order = Order(id_medicine=data['id_medicine'], id_user=data['id_user'], shipDate=data['shipDate'],
-                      amount=data['amount'], status="placed", complete=False)
+                      amount=data['amount'])
 
     # Add new order to db
     session.add(new_order)
     session.commit()
 
-    return Response(response='New order was successfully created!')
+    return jsonify('New order was successfully created!'), 200
 
 
 # Get all orders
@@ -112,10 +111,8 @@ def get_orders_by_username():
         output.append({'id_medicine': r.id_medicine,
                        'id_user': r.id_user,
                        'shipDate': r.shipDate,
-                       'amount': r.amount,
-                       'status': r.status,
-                       'complete': r.complete})
-    return jsonify({"orders": output})
+                       'amount': r.amount})
+    return jsonify(output),200
 
 
 # Update order by id
