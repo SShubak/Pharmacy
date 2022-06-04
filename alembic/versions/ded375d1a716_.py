@@ -33,11 +33,8 @@ def upgrade():
     sa.Column('id_user', sa.Integer(), nullable=False),
     sa.Column('firstName', sa.String(length=45), nullable=True),
     sa.Column('lastName', sa.String(length=45), nullable=True),
-    sa.Column('email', sa.String(length=45), nullable=True),
-    sa.Column('phone', sa.String(length=12), nullable=True),
     sa.Column('login', sa.String(length=45), nullable=True),
     sa.Column('password', sa.String(length=200), nullable=True),
-    sa.Column('is_provisor', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id_user')
     )
     op.create_table('order',
@@ -45,9 +42,7 @@ def upgrade():
     sa.Column('id_medicine', sa.Integer(), nullable=True),
     sa.Column('id_user', sa.Integer(), nullable=True),
     sa.Column('shipDate', sa.DateTime(), nullable=True),
-    sa.Column('status', sa.String(length=45), nullable=True),
     sa.Column('amount', sa.Integer(), nullable=True),
-    sa.Column('complete', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['id_medicine'], ['medicine.id_medicine'], ),
     sa.ForeignKeyConstraint(['id_user'], ['user.id_user'], ),
     sa.PrimaryKeyConstraint('id_order')

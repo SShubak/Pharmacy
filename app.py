@@ -1,10 +1,13 @@
 from flask import Flask
-from waitress import serve
+# from waitress import serve
+from flask_cors import CORS
+
 from User import user
 from Medicine import medicine
 from Pharmacy import order
 
 app = Flask(__name__)
+CORS(app)
 
 app.register_blueprint(user)
 app.register_blueprint(medicine)
@@ -17,5 +20,5 @@ def index():
 
 
 if __name__ == '__main__':
-    serve(app)
-    app.run()
+    # serve(app)
+    app.run(debug=True)

@@ -3,7 +3,8 @@ from marshmallow import ValidationError
 from flask_bcrypt import Bcrypt
 from model import Order, User, Medicine, Session
 from shm import OrderSchema
-from User import  auth
+from User import auth
+
 order = Blueprint('order', __name__)
 bcrypt = Bcrypt()
 
@@ -34,7 +35,8 @@ def register():
         return Response(status=404, response='You can get order on yourself')
 
     # Create new order
-    new_order = Order(id_medicine=data['id_medicine'], id_user=data['id_user'], shipDate=data['shipDate'], amount=data['amount'], status="placed", complete=False)
+    new_order = Order(id_medicine=data['id_medicine'], id_user=data['id_user'], shipDate=data['shipDate'],
+                      amount=data['amount'], status="placed", complete=False)
 
     # Add new order to db
     session.add(new_order)
@@ -88,10 +90,12 @@ def get_order(id_order):
     }
     return jsonify({"order": order_data})
 
+
 # Get all orders for user with provided login
-@order.route('/api/v1/pharmacy/user/ordersall/<login>', methods=['GET'])
+@order.route('/api/v1/pharmacy/user/ordersall/', methods=['GET'])
 @auth.verify_password
-def get_orders_by_username(login):
+def get_orders_by_username():
+    login = auth.get_auth()['username']
     # Check if user exists
     user = session.query(User).filter_by(login=login).first()
     if not user:
@@ -153,7 +157,8 @@ def update_user(id_order):
     session.commit()
 
     # Return new order data
-    order_data = {'id': db_order.id_medicine, 'id_user': db_order.id_user, 'shipDate': db_order.shipDate, 'amount': db_order.amount, 'status': db_order.status, 'complete': db_order.complete}
+    order_data = {'id': db_order.id_medicine, 'id_user': db_order.id_user, 'shipDate': db_order.shipDate,
+                  'amount': db_order.amount, 'status': db_order.status, 'complete': db_order.complete}
     return jsonify({"order": order_data})
 
 

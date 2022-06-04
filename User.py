@@ -11,22 +11,24 @@ bcrypt = Bcrypt()
 session = Session()
 auth = HTTPBasicAuth()
 
+
 # Password Verification
 @auth.verify_password
 def verify_password(login, password):
     try:
         user = session.query(User).filter_by(login=login).first()
         if user and bcrypt.check_password_hash(user.password, password):
-            return login
+            return user
     except:
         return None
+
 
 # Register new user
 @user.route('/api/v1/User', methods=['POST'])
 def register():
     # Get data from request body
     data = request.get_json()
-
+    print(data)
     # Validate input data
     try:
         UserSchema().load(data)
@@ -41,7 +43,8 @@ def register():
     # Hash user's password
     hashed_password = bcrypt.generate_password_hash(data['password'])
     # Create new user
-    new_user = User(firstName=data['firstName'], lastName=data['lastName'], email=data['email'], phone=data['phone'], login=data['login'], password=hashed_password, is_provisor=data['is_provisor'])
+    new_user = User(firstName=data['firstName'], lastName=data['lastName'],
+                    login=data['login'], password=hashed_password)
 
     # Add new user to db
     session.add(new_user)
@@ -51,26 +54,28 @@ def register():
 
 
 # Get user by id
-@user.route('/api/v1/getuser/<id_user>', methods=['GET'])
-#@auth.login_required
-def get_user(id_user):
-    # Check if user exists
-    db_user = session.query(User).filter_by(id_user=id_user).first()
-    if not db_user:
-        return Response(status=404, response='A user with provided ID was not found.')
-    if db_user.login != auth.username():
-        return Response(status=404, response='You can get only your information')
+@user.route('/api/v1/getuser/', methods=['GET'])
+@auth.verify_password
+def get_user():
+    auth_data = auth.get_auth()
+    db_user = session.query(User).filter_by(login=auth_data['username']).first().__dict__
+    del db_user['password'], db_user['_sa_instance_state']
+    return jsonify({"user": db_user})
 
-    # Return user data
-    user_data = {'id': db_user.id_user, 'name': db_user.firstName, 'surname': db_user.lastName}
-    return jsonify({"user": user_data})
+
+@user.route('/api/v1/User/logout', methods=['POST'])
+@auth.verify_password
+def logout():
+    return jsonify('Successful logout'), 200
+
 
 # Update user by id
-@user.route('/api/v1/updateuser/<id_user>', methods=['PUT'])
-#@auth.login_required
-def update_user(id_user):
+@user.route('/api/v1/updateuser/', methods=['PUT'])
+@auth.verify_password
+def update_user():
     # Get data from request body
     data = request.get_json()
+    auth_data = auth.get_auth()
 
     # Validate input data
     try:
@@ -79,10 +84,10 @@ def update_user(id_user):
         return jsonify(err.messages), 400
 
     # Check if user exists
-    db_user = session.query(User).filter_by(id_user=id_user).first()
+    db_user = session.query(User).filter_by(login=auth_data['username']).first()
     if not db_user:
         return Response(status=404, response='A user with provided ID was not found.')
-    if db_user.login != auth.username():
+    if db_user.login != auth_data['username']:
         return Response(status=404, response='You can update only your information')
 
     # Check if login is not taken if user tries to change it
@@ -99,12 +104,6 @@ def update_user(id_user):
     if 'password' in data.keys():
         hashed_password = bcrypt.generate_password_hash(data['password'])
         db_user.password = hashed_password
-    if "email" in data.keys():
-        db_user.email = data['email']
-    if "phone" in data.keys():
-        db_user.phone = data['phone']
-    if "is_provisor" in data.keys():
-        db_user.is_provisor = data['is_provisor']
     # Save changes
     session.commit()
 
@@ -115,7 +114,7 @@ def update_user(id_user):
 
 # Delete user by id
 @user.route('/api/v1/deleteuser/<id_user>', methods=['DELETE'])
-#@auth.login_required
+# @auth.login_required
 def delete_user(id_user):
     # Check if user exists
     db_user = session.query(User).filter_by(id_user=id_user).first()

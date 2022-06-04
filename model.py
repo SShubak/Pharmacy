@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-engine = create_engine('mysql+pymysql://root:OlehSyniuk@localhost:3306/pp')
+engine = create_engine('mysql+pymysql://root:root@localhost:3306/pharmacy')
 
 SessionFactory = sessionmaker(bind=engine)
 
@@ -23,11 +23,8 @@ class User(Base):
     id_user = Column(Integer, primary_key=True)
     firstName = Column(String(45))
     lastName = Column(String(45))
-    email = Column(String(45))
-    phone = Column(String(12))
     login = Column(String(45))
     password = Column(String(200))
-    is_provisor = Column(Boolean, default=False)
 
 
 class Order(Base):
@@ -36,9 +33,7 @@ class Order(Base):
     id_medicine = Column(Integer, ForeignKey('medicine.id_medicine'))
     id_user = Column(Integer, ForeignKey('user.id_user'))
     shipDate = Column(DateTime)
-    status = Column(String(45))
     amount = Column(Integer)
-    complete = Column(Boolean, default=False)
 
     medicine = relationship("Medicine")
     user = relationship("User")
